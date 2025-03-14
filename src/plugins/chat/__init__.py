@@ -21,6 +21,7 @@ from ..memory_system.memory import hippocampus, memory_graph
 from .bot import ChatBot
 from .message_sender import message_manager, message_sender
 
+from ..schedule_weight import schedule_response_weight_manager  # 日程回复权重管理
 
 # 创建LLM统计实例
 llm_stats = LLMStatistics("llm_statistics.txt")
@@ -61,6 +62,9 @@ async def start_background_tasks():
     # 只启动表情包管理任务
     asyncio.create_task(emoji_manager.start_periodic_check(interval_MINS=global_config.EMOJI_CHECK_INTERVAL))
     await bot_schedule.initialize()
+    logger.debug("尝试为日程生成权重")
+    if schedule_response_weight_manager.is_enable():
+        await schedule_response_weight_manager.refresh()
     bot_schedule.print_schedule()
 
 
@@ -148,3 +152,6 @@ async def generate_schedule_task():
     await bot_schedule.initialize()
     if not bot_schedule.enable_output:
         bot_schedule.print_schedule()
+    logger.debug("尝试为日程生成权重")
+    if schedule_response_weight_manager.enable:
+        await schedule_response_weight_manager.refresh()

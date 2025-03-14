@@ -31,6 +31,8 @@ from .willing_manager import willing_manager  # 导入意愿管理器
 from .message_base import UserInfo, GroupInfo, Seg
 from ..utils.logger_config import setup_logger, LogModule
 
+from ..schedule_weight import schedule_response_weight_manager  # 日程回复权重管理
+
 # 配置日志
 logger = setup_logger(LogModule.CHAT)
 
@@ -200,6 +202,21 @@ class ChatBot:
             sender_id=str(message.message_info.user_info.user_id),
         )
         current_willing = willing_manager.get_willing(chat_stream=chat)
+
+        if schedule_response_weight_manager.is_enable() is True:
+            # 加权平均
+            reply_probability_without_schedule = reply_probability
+            reply_probability = (
+                    reply_probability * (1 - schedule_response_weight_manager.get_schedule_weight_ratio())
+                    +
+                    schedule_response_weight_manager.get_now_weight(
+                        schedule_response_weight_manager.seconds_since_midnight()
+                    ) * schedule_response_weight_manager.get_schedule_weight_ratio()
+            )
+            logger.debug(f"日程权重:{schedule_response_weight_manager.get_now_weight(schedule_response_weight_manager.seconds_since_midnight()):.3f};"
+                         f"日程权重占比:{schedule_response_weight_manager.get_schedule_weight_ratio():.3f};"
+                         f"原始回复率:{reply_probability_without_schedule:.3f};"
+                         f"融入日程权重后回复率{reply_probability:.3f}")
 
         logger.info(
             f"[{current_time}][{chat.group_info.group_name if chat.group_info else '私聊'}]{chat.user_info.user_nickname}:"
