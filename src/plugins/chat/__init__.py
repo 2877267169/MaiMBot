@@ -2,7 +2,6 @@ import asyncio
 import time
 import os
 
-from loguru import logger
 from nonebot import get_driver, on_message, on_notice, require
 from nonebot.rule import to_me
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageSegment, MessageEvent, NoticeEvent
@@ -21,8 +20,10 @@ from ..memory_system.memory import hippocampus, memory_graph
 from .bot import ChatBot
 from .message_sender import message_manager, message_sender
 from .storage import MessageStorage
+from src.common.logger import get_module_logger
 from ..schedule_weight import schedule_response_weight_manager  # 日程回复权重管理
 
+logger = get_module_logger("chat_init")
 
 # 创建LLM统计实例
 llm_stats = LLMStatistics("llm_statistics.txt")
