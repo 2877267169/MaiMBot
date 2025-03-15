@@ -64,8 +64,7 @@ async def start_background_tasks():
     asyncio.create_task(emoji_manager.start_periodic_check(interval_MINS=global_config.EMOJI_CHECK_INTERVAL))
     await bot_schedule.initialize()
     logger.debug("尝试为日程生成权重")
-    if schedule_response_weight_manager.is_enable():
-        await schedule_response_weight_manager.refresh()
+    await schedule_response_weight_manager.refresh(today_schedule=bot_schedule.today_schedule)
     bot_schedule.print_schedule()
 
 
@@ -155,7 +154,7 @@ async def generate_schedule_task():
         bot_schedule.print_schedule()
     logger.debug("尝试为日程生成权重")
     if schedule_response_weight_manager.enable:
-        await schedule_response_weight_manager.refresh()
+        await schedule_response_weight_manager.refresh(today_schedule=bot_schedule.today_schedule)
 
 @scheduler.scheduled_job("interval", seconds=3600, id="remove_recalled_message")
 

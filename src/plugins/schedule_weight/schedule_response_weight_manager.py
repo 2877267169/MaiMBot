@@ -172,13 +172,13 @@ class ScheduleResponseWeightManager:
 
         return
 
-    async def refresh(self) -> None:
+    async def refresh(self, today_schedule: Dict[str, str]) -> None:
         """
         刷新今日权重
         """
         logger.info("正在刷新日程权重")
         # 重新获取日程
-        schedule_weight_bridge.refresh_schedule()
+        schedule_weight_bridge.refresh_schedule(today_schedule=today_schedule)
 
         # 根据新日程重新生成
         await self.generate_weight()
@@ -243,6 +243,11 @@ class ScheduleResponseWeightManager:
         centralized_time_list = list(self.centralized_time_schedule_weight.keys())
         weight_list = list(self.centralized_time_schedule_weight.values())
 
+        # 由于明日的日程可能不存在, 故将第一个日程当做明日第一个日程来计算
+        centralized_time_list.append(centralized_time_list[0] + 86400)  # 86400=64*60*60
+        weight_list.append(weight_list[0])
+
+        # 由于昨日的日程可能不存在, 故将今天最后一个日程当做昨天最后一个日程来计算
         if now_time_sec < centralized_time_list[0]:
             now_time_sec += 24 * 60 * 60
 
